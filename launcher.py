@@ -38,27 +38,31 @@ class MyTk(tk.Tk):
         self.geometry("600x400")
 
         self.columnconfigure(1, weight=1)
-        self.rowconfigure(1, weight=1)
+        self.columnconfigure(2, weight=1)
+        self.columnconfigure(3, weight=1)
+        self.rowconfigure(1, weight=0)
+        self.rowconfigure(2, weight=1)
+        self.rowconfigure(3, weight=0)
 
     def add_widgets(self):
         self.btn_frame = ttk.Frame(self)
-        self.btn_frame.grid(row=99, columnspan=3, sticky="ESW", padx=5, pady=5)
+        self.btn_frame.grid(column=1, row=3, columnspan=3, sticky="ESW", padx=5, pady=5)
 
         # add labels and lists
         self.lbl_env = ttk.Label(self, text="Environment")
         self.lbl_env.grid(row=1, column=1, padx=2, sticky="w")
         self.lst_env = ttk.Treeview(self, show="tree")
-        self.lst_env.grid(row=2, column=1, padx=2, sticky="new")
+        self.lst_env.grid(row=2, column=1, padx=2, sticky="news")
 
         self.lbl_fld = ttk.Label(self, text="Directory")
         self.lbl_fld.grid(row=1, column=2, padx=2, sticky="w")
         self.lst_fld = ttk.Treeview(self, show="tree")
-        self.lst_fld.grid(row=2, column=2, padx=2, sticky="new")
+        self.lst_fld.grid(row=2, column=2, padx=2, sticky="news")
 
         self.lbl_app = ttk.Label(self, text="Application")
         self.lbl_app.grid(row=1, column=3, padx=2, sticky="w")
         self.lst_app = ttk.Treeview(self, show="tree")
-        self.lst_app.grid(row=2, column=3, padx=2, sticky="new")
+        self.lst_app.grid(row=2, column=3, padx=2, sticky="news")
 
         # add the ok and cancel buttons
         self.btn_cancel = ttk.Button(self.btn_frame, text="Cancel")
