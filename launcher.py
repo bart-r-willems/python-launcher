@@ -12,22 +12,17 @@ import tkinter.ttk as ttk
 import tkinter.filedialog as Filedialog
 import tkinter.messagebox as Messagebox
 import tkinter.simpledialog as Simpledialog
-import csv, os, shutil, subprocess
+import csv, os, shutil, subprocess, tomllib
 from pathlib import Path
-
-ENV_PATH = Path("D:\\Python\\Venv")
-FAV_PATH = Path("D:\\Python\\Scripts\\notebook_favs.csv")
-ROOT_FLD = Path("D:\\Python")
 
 class MyTk(tk.Tk):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.env_list = sorted(ENV_PATH.iterdir())
-        self.app_list = {"Python": "PYTHON.EXE", 
-                         "Jupyter": "JUPYTER-LAB.EXE",
-                         "Marimo": "MARIMO.EXE",
-                         "IDLE": "IDLE.EXE"}
-        self.fld_list = get_favorites(FAV_PATH)
+        self.config = read_config("config.toml")
+        self.env_path = Path(self.config["paths"]["env"])
+        self.env_list = sorted(self.env_path.iterdir())
+        self.app_list = self.config["apps"]
+        self.fld_list = get_favorites(self.config["paths"]["fav"])
 
         self.setup_window()
         self.add_widgets()
@@ -87,12 +82,17 @@ class MyTk(tk.Tk):
         env = self.get_selection(self.lst_env)
         fld = self.get_selection(self.lst_fld)
         app = self.get_selection(self.lst_app)
+        app_cmd = self.app_list[app]
 
-        full_env = ENV_PATH / env
+        full_env = self.env_path / env
         full_path = self.fld_list[fld]["path"]
-        full_app = ENV_PATH / env / "scripts" / self.app_list[app]
+        if len(app_cmd.split()) == 1:
+            cmd = self.env_path / env / "Scripts" / app_cmd
+        else:
+            cmd = app_cmd.split()
+            cmd[0] = self.env_path / env / "Scripts" / cmd[0]
 
-        subprocess.Popen(f'"{full_app}"', cwd=full_path)
+        subprocess.Popen(cmd, cwd=full_path)
         self.destroy()
 
     def get_selection(self, treeview):
@@ -112,52 +112,11 @@ def get_favorites(filename="notebook_favs.csv"):
     # sort the favorites
     titles = list(favs.keys())
     titles.sort(reverse=True, key=lambda title: favs[title]["usage"])
-    return favs    
+    return favs
 
-import subprocess
-import os
-from pathlib import Path
-
-def run_in_venv(venv_path, executable, args=None, cwd=None):
-    """
-    Run an executable in a Python virtual environment.
-    
-    Args:
-        venv_path: Path to the virtual environment
-        executable: The executable/script to run
-        args: Optional list of arguments for the executable
-        cwd: Optional working directory (defaults to venv_path)
-    """
-    venv_path = Path(venv_path).resolve()
-    
-    # Determine the activation script and Python paths based on OS
-    if os.name == 'nt':  # Windows
-        python_exec = venv_path / 'Scripts' / 'python.exe'
-        activate_script = venv_path / 'Scripts' / 'activate.bat'
-    else:  # Unix/Linux/macOS
-        python_exec = venv_path / 'bin' / 'python'
-        activate_script = venv_path / 'bin' / 'activate'
-    
-    # Set working directory
-    working_dir = cwd if cwd else venv_path
-    
-    # Build command
-    cmd = ["cmd /c", activate_script, executable]
-    if args:
-        cmd.extend(args)
-    
-    # Run the process
-    print("Running the subprocess")
-    print("cwd:", cwd)
-    print("commands:", cmd)
-    result = subprocess.run(
-        cmd,
-        cwd=working_dir,
-        capture_output=True,
-        text=True
-    )
-    
-    return result
+def read_config(filename):
+    with open(filename, mode="rb") as fh:
+        return tomllib.load(fh)
 
 if __name__ == "__main__":
     main()

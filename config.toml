@@ -1,0 +1,11 @@
+[paths]
+env = "D:\\Python\\Venv"
+fav = "D:\\Python\\Scripts\\notebook_favs.csv"
+
+[apps]
+Python = "python.exe"
+"Jupyter Lab" = "jupyter-lab.exe"
+"Jupyter Notebook" = "jupyter-notebook.exe"
+"Jupyter QT Console" = "jupyter-qtconsole.exe"
+Marimo = "marimo.exe edit"
+Idle = "pythonw.exe -m idlelib"
