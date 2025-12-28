@@ -20,7 +20,10 @@ class MyTk(tk.Tk):
         super().__init__(*args, **kwargs)
         self.config = read_config("config.toml")
         self.env_path = Path(self.config["paths"]["env"])
-        self.env_list = sorted(self.env_path.iterdir())
+        self.env_list = sorted(entry 
+                               for entry 
+                               in self.env_path.iterdir()
+                               if is_venv_folder(entry))
         self.app_list = self.config["apps"]
         self.fld_list = get_favorites(self.config["paths"]["fav"])
 
@@ -117,6 +120,16 @@ def get_favorites(filename="notebook_favs.csv"):
 def read_config(filename):
     with open(filename, mode="rb") as fh:
         return tomllib.load(fh)
+    
+def is_venv_folder(path: Path) -> bool:
+    """Return True if providfed argument is a venv folder"""
+    # for now a simple check suffices
+    if not path.is_dir():
+        return False
+    if not (path / "pyvenv.cfg").exists():
+        return False
+    # all tests passed
+    return True
 
 if __name__ == "__main__":
     main()
