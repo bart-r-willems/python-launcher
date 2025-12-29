@@ -15,10 +15,12 @@ import tkinter.simpledialog as Simpledialog
 import csv, os, shutil, subprocess, tomllib
 from pathlib import Path
 
+APP_TITLE = "Python Interactive Starter"
+
 class MyTk(tk.Tk):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.config = read_config("config.toml")
+        self.config = read_config(my_dir() / "config.toml")
         self.env_path = Path(self.config["paths"]["env"])
         self.env_list = sorted(entry 
                                for entry 
@@ -32,7 +34,7 @@ class MyTk(tk.Tk):
         self.populate_widgets()
 
     def setup_window(self):
-        self.title("Python Interactive Starter")
+        self.title(APP_TITLE)
         self.geometry("600x400")
 
         self.columnconfigure(1, weight=1)
@@ -85,18 +87,34 @@ class MyTk(tk.Tk):
         env = self.get_selection(self.lst_env)
         fld = self.get_selection(self.lst_fld)
         app = self.get_selection(self.lst_app)
-        app_cmd = self.app_list[app]
 
+        if any([env == "", fld == "", app == ""]):
+            Messagebox.showerror(
+                title=APP_TITLE,
+                message="Please ensure all are selected:"
+                        "\n*  Environment"
+                        "\n*  Directory"
+                        "\n*  Application"
+            )
+            return
+        app_cmd = self.app_list[app]
         full_env = self.env_path / env
         full_path = self.fld_list[fld]["path"]
         if len(app_cmd.split()) == 1:
-            cmd = self.env_path / env / "Scripts" / app_cmd
+            cmd = [self.env_path / env / "Scripts" / app_cmd]
         else:
             cmd = app_cmd.split()
             cmd[0] = self.env_path / env / "Scripts" / cmd[0]
 
-        subprocess.Popen(cmd, cwd=full_path)
-        self.destroy()
+        if cmd[0].exists():
+            subprocess.Popen(cmd, cwd=full_path)
+            self.destroy()
+        else:
+            Messagebox.showerror(
+                title=APP_TITLE,
+                message="The selected app is not available"
+                        "\nin this envirenment"
+            )
 
     def get_selection(self, treeview):
         index = treeview.selection()
@@ -130,6 +148,10 @@ def is_venv_folder(path: Path) -> bool:
         return False
     # all tests passed
     return True
+
+def my_dir() -> Path:
+    """Return the path of the launcher app"""
+    return Path(__file__).resolve().parent
 
 if __name__ == "__main__":
     main()
